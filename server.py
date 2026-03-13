@@ -26,7 +26,7 @@ def decidir_vencedor(j1, j2):
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.bind((HOST, PORT))
-    s.listen(2)
+    s.listen(1)
 
     print("Servidor iniciado...")
 
