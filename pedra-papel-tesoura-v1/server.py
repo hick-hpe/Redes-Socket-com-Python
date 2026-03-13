@@ -2,35 +2,43 @@
 import socket
 
 HOST = "0.0.0.0"
-PORT = 9002
+PORT = 9000
 
 
 def decidir_vencedor(j1, j2):
+    jogadas = {
+        "pedra": "tesoura",
+        "tesoura": "papel",
+        "papel": "pedra"
+    }
 
     if j1 == j2:
         return "empate"
-    elif (
-        j1 == 'tesoura' and j2 == 'papel' or
-        j1 == 'papel' and j2 == 'pedra' or
-        j1 == 'pedra' and j2 == 'tesoura'
-    ):
+    elif jogadas[j1] == j2:
         return "v1"
-    elif (
-        j2 == 'tesoura' and j1 == 'papel' or
-        j2 == 'papel' and j1 == 'pedra' or
-        j2 == 'pedra' and j1 == 'tesoura'
-    ):
+    else:
         return "v2"
-        
+
+
+def jogada_valida(j):
+    return j in ["pedra", "papel", "tesoura"]
+
+
+def receber_jogada(conn):
+    while True:
+        jogada = conn.recv(1024).decode().strip().lower()
+        if jogada_valida(jogada):
+            return jogada
+        else:
+            conn.sendall("Jogada inválida. Tente novamente.".encode())
 
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.bind((HOST, PORT))
     s.listen(1)
 
-    print("Servidor iniciado...")
-
-    dados = []
+    print("Iniciado partida!!!")
+    print("Esperando jogadores...")
 
     conn1, addr1 = s.accept()
     print(f"Cliente 1 conectou!!")
@@ -38,9 +46,13 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     conn2, addr2 = s.accept()
     print(f"Cliente 2 conectou!!")
 
-    data1 = conn1.recv(1024).decode()
-    
-    data2 = conn2.recv(1024).decode()
+    data1 = receber_jogada(conn1)
+    data2 = receber_jogada(conn2)
+
+    if data1 is None or data2 is None:
+        print("Um jogador desconectou.")
+        conn1.close()
+        conn2.close()
 
     print("Fim de jogo:")
     print(f"J1: {data1}")
@@ -48,7 +60,6 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     
     r1, r2 = "r1", "r2"
     resposta_jogada = decidir_vencedor(data1, data2)
-    print(resposta_jogada)
     if resposta_jogada == "v1":
         r1 = "Voce venceu!!!"
         r2 = "Voce perdeu!!!"
