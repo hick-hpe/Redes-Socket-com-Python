@@ -60,10 +60,6 @@ redes-sockets-com-python/
 │  ├─ server.py
 │  └─ client.py
 │
-├─ chat-v2/
-│  ├─ server.py
-│  └─ client.py
-│
 └─ README.md
 ```
 
